@@ -1,17 +1,55 @@
 {
-  "name": "demo",
+  "name": "cameracanvas",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
   "dependencies": {
-    "@types/node": "*",
-    "colors": "*",
-    "glob": "*",
-    "minimatch": "*",
-    "yargs": "^11.0.0"
+    "@tensorflow/tfjs": "^2.7.0",
+    "core-js": "^3.6.5",
+    "face-api.js": "^0.22.2",
+    "vue": "^3.0.0",
+    "vue-class-component": "^8.0.0-0"
   },
   "devDependencies": {
-    "@types/node": "^9.6.1",
-    "colors": "^1.1.2",
-    "glob": "^7.1.1",
-    "minimatch": "^3.0.4",
-    "yargs": "^11.0.0"
-  }
+    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/parser": "^2.33.0",
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-typescript": "^4.5.8",
+    "@vue/cli-service": "~4.5.0",
+    "@vue/compiler-sfc": "^3.0.0",
+    "@vue/eslint-config-typescript": "^5.0.2",
+    "axios": "^0.21.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^7.0.0-0",
+    "microsoft-cognitiveservices-speech-sdk": "^1.14.1",
+    "node-sass": "^5.0.0",
+    "sass-loader": "^10.1.0",
+    "typescript": "~3.9.3"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended",
+      "@vue/typescript"
+    ],
+    "parserOptions": {
+      "parser": "@typescript-eslint/parser"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
 }
