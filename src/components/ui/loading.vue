@@ -15,7 +15,7 @@
       </path>
     </svg>
     <div class="geekLogoBox" :style="{
-        opacity: overSpeed ? 1 : 0
+        opacity: isHide ? 0 : 1
       }">
       <div class="logoMerge">
         <svg class="fontIcon logo1" aria-hidden="true">
@@ -44,6 +44,7 @@ import { Options, Vue } from 'vue-class-component';
       overSpeed: false,
       distinguish: null,
       isHide: false,
+      loadTimer: null,
     };
   },
   watch: {
@@ -76,17 +77,19 @@ import { Options, Vue } from 'vue-class-component';
   },
   methods: {
     setSpeed(speed: number, time: number) {
-      return new Promise((resolve) => {
+      return new Promise<void>((resolve) => {
         const { curSeppd } = this;
         // 每 N time 自增 1% 进度
         const selfIncreas = (speed - Number(curSeppd)) / time;
         this.curSeppd = Number(this.curSeppd) + selfIncreas;
-        const timer = setInterval(() => {
+        this.loadTimer = setInterval(() => {
           const cSeppd = Number(this.curSeppd) + selfIncreas;
           if (cSeppd >= speed) {
-            // eslint-disable-next-line no-debugger
             this.curSeppd = speed;
-            clearInterval(timer);
+            if (this.loadTimer) {
+              this.loadTimer = null;
+              clearInterval(this.loadTimer);
+            }
             resolve();
           } else {
             this.curSeppd = cSeppd.toFixed(2);
@@ -97,6 +100,13 @@ import { Options, Vue } from 'vue-class-component';
 
     hide() {
       this.isHide = true;
+    },
+
+    stop() {
+      if (this.loadTimer) {
+        this.loadTimer = null;
+        clearInterval(this.loadTimer);
+      }
     },
   },
 })

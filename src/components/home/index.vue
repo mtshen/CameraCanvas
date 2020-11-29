@@ -5,16 +5,9 @@
       <p class="title">请说出你要使用的操作</p>
     </div>
     <div class="btns">
-      <GButton text="登陆拣选" class="btn" />
-      <GButton text="登陆叉车" class="btn" />
+      <GButton text="注册系统" class="btn" />
+      <GButton text="登陆拣选" class="btn" @click="login"/>
     </div>
-
-    <!-- <div>
-      <svg class="fontIcon logo1" aria-hidden="true">
-        <use xlink:href="#iconor2"></use>
-      </svg>
-    </div>
-    <i class="iconfont iconor2"></i> -->
   </div>
 </template>
 
@@ -32,7 +25,11 @@ import GButton from "@/components/ui/button.vue";
   },
   mounted() {
   },
-  methods: {},
+  methods: {
+    login() {
+      this.$emit("changestep", 3);
+    }
+  },
   components: {
     GButton,
   },

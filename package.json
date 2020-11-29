@@ -11,8 +11,10 @@
     "@tensorflow/tfjs": "^2.7.0",
     "core-js": "^3.6.5",
     "face-api.js": "^0.22.2",
+    "loaders.css": "^0.1.2",
     "vue": "^3.0.0",
-    "vue-class-component": "^8.0.0-0"
+    "vue-class-component": "^8.0.0-0",
+    "vue-loaders": "^4.1.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.33.0",

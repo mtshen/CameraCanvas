@@ -24,16 +24,15 @@ export class CameraCanvas {
         console.error("没有得到可用的Canvas数据");
         return;
     }
-
     // 参数
     // canvas元素
     this.canvasElement = canvas;
     // 2d实例
     this.canvasElement2d = canvas.getContext("2d") as CanvasRenderingContext2D;
     // 宽度
-    this.width = width || canvas.offsetWidth;
+    this.width = width || canvas.width;
     // 高度
-    this.height = height || canvas.offsetHeight;
+    this.height = height || canvas.height;
     // 媒体设置
     mediaConf && (this.mediaConf = mediaConf);
     // voide
@@ -56,7 +55,6 @@ export class CameraCanvas {
       // 打开摄像头
       navigator.mediaDevices.getUserMedia(
         mediaConf || {
-          audio: true,
           video: { width, height, facingMode: "user" }
         }
       )
