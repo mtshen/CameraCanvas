@@ -35,12 +35,43 @@ import { play, faceGetFaceId } from "@/components/api/common"
         name: "",
         status: 0,
         gender: 1,
+        isDisabled: false,
         blacklist: [],
+      },
+      bgAnData: {
+        x: 0,
+        stop: false,
       },
     };
   },
   created() {
 
+  },
+  watch: {
+    'stationOpt.status': {
+      handler(value) {
+        const { distinguish } = this;
+        // 如果是登陆状态  置信度极低
+        if (value === 1) {
+          distinguish.setTinyFaceDetectorOptions({
+            inputSize: 256,
+            scoreThreshold: 0.1,
+          });
+
+          // 停止扫描
+          this.stopDraw();
+        } else {
+          // 否则置信度较高
+          distinguish.setTinyFaceDetectorOptions({
+            inputSize: 256,
+            scoreThreshold: 0.70,
+          });
+
+          // 开始扫描
+          this.drawBg();
+        }
+      },
+    }
   },
   mounted() {
     const { canvasBg, canvas } = this.$refs;
@@ -92,40 +123,57 @@ import { play, faceGetFaceId } from "@/components/api/common"
 
     // 绘制背景层
     drawBg() {
-      const { canvasBg, canvasBGW, canvasBGH } = this;
+      const { canvasBg, canvasBGW, canvasBGH, bgAnData } = this;
+      const bgAnDataX = bgAnData.x;
+
+      // 清空画布
+      canvasBg.clearRect(0, 0, canvasBGW, canvasBGH);
+
       canvasBg.beginPath();
-      canvasBg.strokeStyle = "#1e6674";
-      canvasBg.lineWidth = 1;
-
-      const gridWNumber = 9;
-      const gridHNumber = 9;
-      const gridWSpacing = canvasBGW / (gridWNumber + 1);
-      const gridhSpacing = canvasBGW / (gridHNumber + 1);
-      Array.prototype.forEach.call([...new Array(gridWNumber)], (val, index) => {
-        const x = (index + 1) * gridWSpacing;
-        canvasBg.moveTo(x, 0);
-        canvasBg.lineTo(x, canvasBGH);
-        canvasBg.stroke();
-      });
-
-      Array.prototype.forEach.call([...new Array(gridHNumber)], (val, index) => {
-        const y = (index + 1) * gridhSpacing;
-        canvasBg.moveTo(0, y);
-        canvasBg.lineTo(canvasBGW, y);
-        canvasBg.stroke();
-      });
-
+      // 开始绘制
+      canvasBg.moveTo(0, bgAnDataX);
+      canvasBg.lineTo(canvasBGW, bgAnDataX);
+      canvasBg.fillRect(0, 0, canvasBGW, bgAnDataX - 1);
       canvasBg.closePath();
+      canvasBg.stroke();
+
+      const nx = bgAnDataX + 3;
+
+      // 是否停止
+      if (this.bgAnData.stop) {
+        bgAnData.x = 0;
+        canvasBg.clearRect(0, 0, canvasBGW, canvasBGH);
+      } else if (nx > canvasBGH) {
+        bgAnData.x = 0;
+        setTimeout(() => { canvasBg.clearRect(0, 0, canvasBGW, canvasBGH); }, 500);
+        setTimeout(() => { this.drawBg(); }, 1000);
+      } else {
+        bgAnData.x = nx;
+        requestAnimationFrame(() => {
+          this.drawBg();
+        });
+      }
     },
 
     draw() {
+      const { canvasBg } = this;
+      canvasBg.strokeStyle = "#03a9f4";
+      canvasBg.fillStyle = "#03a9f42b";
+      canvasBg.lineWidth = 2;
+      this.bgAnData.stop = false;
       this.drawBg();
+    },
+
+    stopDraw() {
+      this.bgAnData.stop = true;
     },
 
     quit() {
       const { name, blacklist } = this.stationOpt;
+      this.stationOpt.isDisabled = true;
       blacklist.push(name);
       setTimeout(() => {
+        this.stationOpt.isDisabled = false;
         const nameIndex = blacklist.indexOf(name);
         nameIndex !== -1 && blacklist.splice(nameIndex, 1);
       }, 5000);
@@ -148,7 +196,8 @@ import { play, faceGetFaceId } from "@/components/api/common"
     startRequestFaceGetFaceId() {
       if (!this.isStopRequestFaceGetFaceId) {
 
-        if (!this.distinguish.isInvalidData) {
+        // 数据有效且系统不在禁用状态
+        if (!this.distinguish.isInvalidData && !this.stationOpt.isDisabled) {
           this.faceGetFaceId().then(({ data }) => {
             this.faceGetFaceLoading = false;
             this.handleFaceId(data);
@@ -175,8 +224,6 @@ import { play, faceGetFaceId } from "@/components/api/common"
       if (blacklist.includes(faceName)) {
         return;
       }
-
-      console.log("faceName -> ", faceName);
 
       let playText;
       if (faceName) {
@@ -235,12 +282,15 @@ import { play, faceGetFaceId } from "@/components/api/common"
             playText = `该工作站正在被${name}使用!`;
             play(playText);
             break;
+            // 未登录状态
+          case 0:
+            // 无权限身份
+            // playText = `您好，您还没有注册,请先注册！`;
+            // play(playText);
+            break;
           default:
             break;
         }
-        // 无权限身份
-        // playText = `您好，您还没有注册,请先注册！`;
-        // play(playText);
       }
     },
 
@@ -279,12 +329,11 @@ export default class HelloWorld extends Vue {}
   position: absolute;
   top: 0;
   left: 0;
-  background: #0e3056;
   width: 100%;
   height: 100%;
   border: 1px solid #03A9F4;
   box-shadow: 0 0 8px #03A9F4 inset;
-  opacity: 0.4;
+  opacity: 0.9;
   z-index: 2;
 }
 

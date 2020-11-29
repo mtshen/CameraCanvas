@@ -26,7 +26,9 @@ import GButton from "../ui/button.vue";
   },
   methods: {
     quit() {
-      this.$emit("quit")
+      if (!this.lock) {
+        this.$emit("quit")
+      }
     }
   },
   components: {

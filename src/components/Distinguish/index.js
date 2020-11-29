@@ -16,6 +16,7 @@ export class Distinguish {
   entryTime = null;
   // 当前数据集是否是无效数据
   isInvalidData = true;
+  tinyFaceDetectorOptions;
 
   constructor(canvas, option) {
     const { videoWidth, videoHeight, intervalTime } = option;
@@ -37,9 +38,20 @@ export class Distinguish {
   // 载入算法
   async loadWeights() {
     // 载入识别算法
-    await faceapi.nets.ssdMobilenetv1.load('/weights');
-    await faceapi.nets.ageGenderNet.loadFromUri('/weights');
+    // await faceapi.nets.ssdMobilenetv1.load('/weights');
+    // await faceapi.nets.ageGenderNet.loadFromUri('/weights');
     await faceapi.nets.faceLandmark68Net.loadFromUri('/weights');
+    await faceapi.nets.tinyFaceDetector.loadFromUri('/weights');
+
+    this.tinyFaceDetectorOptions = new faceapi.TinyFaceDetectorOptions({
+      inputSize: 256,
+      scoreThreshold: 0.70,
+    });
+  }
+
+  // 重置置信度
+  setTinyFaceDetectorOptions(option) {
+    this.tinyFaceDetectorOptions = new faceapi.TinyFaceDetectorOptions(option);
   }
 
   // 开始识别人像
@@ -57,7 +69,7 @@ export class Distinguish {
           const { cameraCanvas } = this;
           const videoElement = cameraCanvas.videoElement;
           const videoFaceTimer = setInterval(() => {
-            faceapi.detectSingleFace(videoElement).then(() => {
+            faceapi.detectSingleFace(videoElement, this.tinyFaceDetectorOptions).then(() => {
               // 进来之后就算作加载完成了, 不再进行轮询调用
               if (!this.isLoadOver) {
                 clearInterval(videoFaceTimer);
@@ -81,7 +93,7 @@ export class Distinguish {
   distinguish() {
     const { cameraCanvas } = this;
     const videoElement = cameraCanvas.videoElement;
-    faceapi.detectSingleFace(videoElement).withFaceLandmarks().then((results) => {
+    faceapi.detectSingleFace(videoElement, this.tinyFaceDetectorOptions).withFaceLandmarks().then((results) => {
       if (results && !this.distinguishResult) {
         this.onCharacterEntry(results);
       } else if (!results && this.distinguishResult) {
@@ -117,7 +129,7 @@ export class Distinguish {
 
   // 开始向Canvas渲染
   startRender() {
-    const { canvas, canvas2d, cameraCanvas, distinguishResult } = this;
+    const { canvas, canvas2d, cameraCanvas, distinguishResult, isInvalidData } = this;
     const { videoElement } = cameraCanvas;
 
     if (videoElement.ended) {
@@ -127,8 +139,10 @@ export class Distinguish {
     canvas2d.drawImage(videoElement, 0, 0);
 
     // 匹配区域
-    distinguishResult && faceapi.draw.drawDetections(canvas, distinguishResult);
-    distinguishResult && faceapi.draw.drawFaceLandmarks(canvas, distinguishResult);
+    if (!isInvalidData) {
+      distinguishResult && faceapi.draw.drawDetections(canvas, distinguishResult);
+      distinguishResult && faceapi.draw.drawFaceLandmarks(canvas, distinguishResult);
+    }
     window.requestAnimationFrame(() => {
         this.startRender();
     });
